@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+h1 {
+  margin-left:60px;
+  text-transform: uppercase;
+  color: #3c3c3c;
+}
+body {
+  background-color: #fff3b7;
+}
+
+  .button {
+  background-color: #555555;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+.button:hover {
+  background-color: #0094f4;
+  color: white;
+}      
+      
+      
+      div{
+      margin:5px;
+      }
+      </style>
+  </head>
+  <body>
+  <h2 style="font-family: Arial ">
+Hello and welcome to the JtoGSS App! (JsonGOV to Google Spreadsheet)</h2>
+<pre style="font-family: Lucida Console">
+Application instructions:
+1) Enter the URL of "gov.il" API or choose from the drop-down list.
+
+2) Enter the URL of the Google-Spread-Sheet document which you want to enter information 
+   (Note: the application will delete the information it contains and put new information there)
+
+3) Press "go" to bring the varibels from the API.
+
+4) Choose the fileds you want and and rename then if you wish.
+
+5) Pressing FETCH will bring up the information to the Spreadsheet.
+  </pre>
+  
+    <h2 style="font-family: Arial ">Please enter the information:</h1>
+    
+    <div>
+      <label style="margin-left:88px ;font-family: Lucida Console">api url:</label><input type="url" id="theAPIUrl" size=100 list="someValidUrls"/>
+    <datalist id="someValidUrls">
+        <option value="https://data.gov.il/api/3/action/datastore_search?resource_id=345ddd75-98ed-4ee9-b0e5-72ecfa9137e3&limit=85">מידע על כלבים</option>
+        <option value="https://data.gov.il/api/3/action/datastore_search?resource_id=a2b2fceb-3334-44eb-b7b5-9327a573ea2c&limit=5900">covid19 מידע על נפטרים מוירוס</option>
+        <option value="https://data.gov.il/api/3/action/datastore_search?resource_id=8a51c65b-f95a-4fb8-bd97-65f47109f41f&limit=650">תמותה ואשפוזים הקשורים לקורונה לאחר החיסון</option>
+        <option value="https://data.gov.il/api/3/action/datastore_search?resource_id=7f467a30-58cd-44b5-86f0-d570cc7d25ad"> מבנים בבנייה ירוקה</option>    
+    </datalist>
+    
+
+    </div>
+    <div>
+      <label style="font-family: Lucida Console">Google Sheet url:</label><input type="url" id="theSSUrl" size=100> 
+   </div>
+   <button id="add" class="button" style="border-radius: 50%">go</button>
+    <h2 id ="errOutput" style= "background-color: #f44336"></h2>
+    <h2 id ="succOutput" style= "background-color: green"></h2>
+    <h2 id ="warningOutput" style= "background-color: yellow"></h2>
+   
+   <table id = "varTable"></table>
+    <label id="mone" style="display: none">1</label>
+   
+
+
+<button class="button" id="ftch" style="display: none">fetch</button>
+<button class="button" id="restart_try" style="display: none">restart for another try</button>
+<button class="button" id="restart_box" style="display: none">restart cheakboxes</button>
+<script>
+document.getElementById("ftch").addEventListener("click", fetchData);
+document.getElementById("add").addEventListener("click", go);
+document.getElementById("restart_try").addEventListener("click", startNewTry);
+document.getElementById("restart_box").addEventListener("click", zearoTheCheakbox);
+
+
+function go()
+{
+ var theAPIUrl = document.getElementById("theAPIUrl").value;
+    google.script.run.withFailureHandler(onFailure).withSuccessHandler(ContinueWithShow).rrrr(theAPIUrl); 
+}
+function ContinueWithShow(keys)
+{
+   document.getElementById("add").disabled = true;
+   var mess = document.getElementById('errOutput');
+     mess.innerHTML = "";
+     mess = document.getElementById('succOutput');
+     mess.innerHTML = "";
+     mess = document.getElementById('warningOutput');
+     mess.innerHTML = "";
+   var length = keys.length;
+   for(var i =1;i<length;i++)
+   {
+      AddRow(keys[i]);     
+   }
+   document.getElementById("ftch").style.display = 'inline';
+   document.getEleentById("restart_try").style.display = 'inline';
+   document.getElementById("restart_box").style.display = 'inline';
+}
+function AddRow(name) {
+
+  var i = document.getElementById("mone").innerHTML;
+  var x = parseInt(i,10)+1;
+  document.getElementById("mone").innerHTML = x.toString();
+  
+  var table = document.getElementById("varTable");
+  var row = table.insertRow(-1);
+  var str1 = '<td><label>';
+  var str2 = ' </label></td><td><input type ="text" id ="var';
+  var str3 = '" value="';
+  var str4 = '"></td><td><input type="checkbox" name="cols_to_show" id ="checkbox_var';
+  var str5 = '" value="';
+  var str6 = '"></td></tr>';
+  
+  str1 = str1 + name;
+  str2 = str2 + i;
+  str3 = str3 +name;
+  str4 = str4 + i;
+  str5 = str5 + name;
+  var str = str1 + str2 + str3 + str4 + str5 + str6; 
+  row.innerHTML = str;
+ 
+}
+ function startNewTry()
+ {
+    var mess = document.getElementById('errOutput');
+     mess.innerHTML = "";
+     mess = document.getElementById('succOutput');
+     mess.innerHTML = "";
+     mess = document.getElementById('warningOutput');
+     mess.innerHTML = "";
+     document.getElementById("ftch").disabled = false;
+     document.getElementById("add").disabled = false;
+     document.getElementById("theAPIUrl").value = "";
+     document.getElementById("theSSUrl").value = "";
+     document.getElementById("mone").innerHTML = "1";
+     var Table = document.getElementById("varTable");
+     Table.innerHTML = "";
+ }
+ function zearoTheCheakbox()
+ {
+     var mess = document.getElementById('errOutput');
+     mess.innerHTML = "";
+     mess = document.getElementById('succOutput');
+     mess.innerHTML = "";
+     mess = document.getElementById('warningOutput');
+     mess.innerHTML = "";
+     document.getElementById("ftch").disabled = false;
+     document.getElementById("add").disabled = true;
+    
+    const cbs = document.querySelectorAll('input[name="cols_to_show"]');
+    cbs.forEach((cb) => {
+        cb.checked = false;
+    });
+  }
+  function tryFaildShowWarning()
+  {
+       var mess = document.getElementById('warningOutput');
+       mess.innerHTML = "please enter values!";
+  }
+  function unDisabled()
+  {
+      document.getElementById("ftch").disabled = false;
+      document.getElementById("add").disabled = false;
+  }
+function fetchData()
+{ 
+     var theAPIUrl = document.getElementById("theAPIUrl").value;
+     var theSSUrl = document.getElementById("theSSUrl").value;
+
+     //getting the vars int array:
+     var i = document.getElementById("mone").innerHTML;
+     var varsArr_length = parseInt(i,10) -1;
+     var varsColName = new Array(varsArr_length);
+     var varsNameToServer = new Array(varsArr_length);
+
+     for (var j = 1; j <= varsArr_length; j++) {
+     var X = "var"+ j.toString();
+     var Y = "checkbox_var" + j.toString();
+     var var_j_colName = document.getElementById(X).value;
+     var var_j_ServerName = document.getElementById(Y);
+     
+     if (var_j_ServerName.checked){
+           varsColName[j-1] = var_j_colName;
+           varsNameToServer[j-1] = var_j_ServerName.value;
+        }
+     }
+     
+     
+     zipArry(varsColName);
+    
+     zipArry(varsNameToServer);
+     
+     
+     if(!arrVarsIsEmpty(varsColName))
+     {
+       google.script.run.withFailureHandler(onFailure).withSuccessHandler(onSuccess)
+         .userClicked(theAPIUrl,theSSUrl,varsColName,varsNameToServer); 
+     }
+     else
+     {
+        tryFaildShowWarning();
+        unDisabled();
+     }
+}
+function zipArry(arrayWithSpeaces)
+{
+   var arr_length =  arrayWithSpeaces.length;
+   var okpoint=0;
+   var cur_empty_spaece = 0;
+   var flag = 0;
+   while(flag != 1)
+   {
+      for(var i = cur_empty_spaece; i < arr_length; i++) {
+         if(typeof arrayWithSpeaces[i] === 'undefined' || arrayWithSpeaces[i] == ""){
+             cur_empty_spaece = i;
+             okpoint=1;
+             break;
+             }
+      }
+      if(okpoint == 1)
+      {
+          okpoint =0;
+          var j;
+          for (j = cur_empty_spaece + 1; j < arr_length; j++) {
+              if(arrayWithSpeaces[j] != ""){
+                 arrayWithSpeaces[cur_empty_spaece] = arrayWithSpeaces[j];
+                  arrayWithSpeaces[j] = "";
+                 break;
+             }
+          }
+         if(j == arr_length)
+           flag = 1;
+      }
+      else
+           flag =1;
+   }
+}
+function arrVarsIsEmpty(vars)
+{
+   var varsArr_length =  vars.length;
+   for (var i = 0; i < varsArr_length; i++) {
+       if(vars[i] != "")
+          return 0;
+    }
+    return 1;
+}
+function onFailure(error) {
+      var mess = document.getElementById('errOutput');
+      unDisabled();
+      var str_error = error.message;
+      if(str_error.search("Cannot read property"))
+      {
+          str_error = "we do not support json files that are not: data.gov.il";
+          mess.innerHTML = "ERROR: "+str_error;
+      }
+      else
+          mess.innerHTML = "ERROR: " + error.message;
+}
+function onSuccess() { 
+      mess = document.getElementById('warningOutput');
+      mess.innerHTML = "";
+      var m = document.getElementById('errOutput');
+      m.innerHTML = "";
+      document.getElementById("ftch").disabled = false;
+      var mess = document.getElementById('succOutput');
+      mess.innerHTML = "OK";
+}
+      
+      </script>
+
+  </body>
+</html>
